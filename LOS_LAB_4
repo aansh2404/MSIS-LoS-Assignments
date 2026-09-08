@@ -1,0 +1,343 @@
+Part A - Basic grep and Filtering
+
+
+•	Display all lines containing the word failed.
+grep "failed" security_log.txt
+
+•	Display all lines containing failed, ignoring case.
+grep -i "failed" security_log.txt
+
+•	Display all lines that contain either Failed or Denied.
+grep -E "Failed|Denied" security_log.txt
+
+•	Display all lines that do not contain the word INFO.
+grep -v "INFO" security_log.txt
+
+ 
+Display all lines containing the exact word root.
+grep -w "root" security_log.txt
+
+•	Display all occurrences of the word attack along with their line numbers.
+grep -n "attack" security_log.txt
+
+•	Count the number of lines containing ERROR.
+grep -c "ERROR" security_log.txt
+
+•	Display only the filenames of files whose contents contain the word malware, assuming multiple log files are available.
+grep -l "malware" *.txt
+
+•	Display the first five lines containing Suspicious.
+grep "Suspicious" security_log.txt | head -5
+
+•	Display the last five failed-login entries.
+grep -i "Failed login" security_log.txt | tail -5
+
+ 
+Part B - Regular Expression Extraction
+
+
+•	Extract all IPv4 addresses from the log.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt
+
+•	Extract all IP addresses belonging to the 10.x.x.x private network.
+grep -Eo '\b10\.([0-9]{1,3}\.){2}[0-9]{1,3}\b' security_log.txt
+
+•	Extract all addresses belonging to the 192.168.x.x network.
+grep -Eo '\b192\.168\.([0-9]{1,3}\.)[0-9]{1,3}\b' security_log.txt
+
+ 
+•	Extract all email addresses.
+grep -Eo '[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]+' security_log.txt
+
+•	Extract only email addresses whose domain ends in .com.
+grep -Eo '[[:alnum:]._%+-]+@[[:alnum:].-]+\.com\b' security_log.txt
+
+•	Extract email addresses whose username contains at least one digit.
+grep -Eo '[[:alnum:]._%+-]*[0-9][[:alnum:]._%+-]*@[[:alnum:].-]+\.[[:alpha:]]+' security_log.txt
+
+•	Extract all URLs beginning with http:// or https://.
+grep -Eo 'https?://[^[:space:]]+' security_log.txt
+
+•	Extract only HTTPS URLs.
+grep -Eo 'https://[^[:space:]]+' security_log.txt
+
+ 
+•	Extract URLs ending with .php.
+grep -Eo 'https?://[^[:space:]]+\.php\b' security_log.txt
+
+•	Extract all CVE identifiers in the form:CVE-YYYY-NNNN
+grep -Eo 'CVE-[0-9]{4}-[0-9]{4,}' security_log.txt
+
+•	Extract only CVEs reported for the year 2025.
+grep -Eo 'CVE-2025-[0-9]{4,}' security_log.txt
+
+•	Extract all 32-character hexadecimal MD5 hashes.
+grep -Eo '\b[[:xdigit:]]{32}\b' security_log.txt
+
+•	Extract all 40-character hexadecimal SHA-1 hashes.
+grep -Eo '\b[[:xdigit:]]{40}\b' security_log.txt
+
+•	Extract all 64-character hexadecimal SHA-256 hashes.
+grep -Eo '\b[[:xdigit:]]{64}\b' security_log.txt
+
+ 
+•	Extract all timestamps having the format: YYYY-MM-DD HH:MM:SS
+grep -Eo '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}' security_log.txt
+
+
+
+Part C - Anchors and Regex Patterns
+•	Display all lines beginning with a timestamp.
+grep -E '^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\]' security_log.txt
+
+•	Display all lines beginning with the word Suspicious.
+grep '^Suspicious' security_log.txt
+
+•	Display lines ending with a numeric value.
+grep -E '[0-9]+$' security_log.txt
+
+ 
+•	Display lines beginning with ERROR or WARNING.
+grep -E '^(ERROR|WARNING)' security_log.txt
+
+•	Display lines whose first character is a digit.
+grep -E '^[0-9]' security_log.txt
+
+•	Find lines ending in .exe.
+grep -E '\.exe$' security_log.txt
+
+•	Find lines containing filenames ending in .exe, .sh, or .pdf.
+grep -E '[[:alnum:]_.-]+\.(exe|sh|pdf)\b' security_log.txt
+
+•	Identify lines containing the exact word root, but not words such as rooted.
+grep -w "root" security_log.txt
+
+•	Display blank lines in the file.
+grep '^$' security_log.txt
+
+•	Display all nonblank lines.
+grep -v '^$' security_log.txt
+
+ 
+Part D - Linux Filters and Pipelines
+•	Extract all IPv4 addresses, sort them, and remove duplicates.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort -V | uniq
+
+•	Count the number of unique IPv4 addresses present in the log.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort -V | uniq | wc -l
+
+•	Extract all IP addresses and display them in sorted order.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort -V
+
+•	Determine which IP addresses appear more than once.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort -V | uniq -c | awk '$1 > 1'
+
+•	Determine the IP address that occurs most frequently.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort | uniq -c | sort -nr | head -1
+
+•	Extract all usernames from authentication entries and display unique usernames.
+grep -i "login for user" security_log.txt | grep -Eo 'user [[:alnum:]_]+' | awk '{print $2}' | sort -u
+
+ 
+•	Count the number of authentication attempts associated with each username
+grep -i "login for user" security_log.txt | grep -Eo 'user [[:alnum:]_]+' | awk '{print $2}' | sort | uniq
+-c
+
+•	Extract all HTTP status codes and determine how many times each status code occurs.
+grep -Eo 'status [0-9]{3}' security_log.txt | awk '{print $2}' | sort | uniq -c
+
+•	Display the five most frequently occurring IP addresses.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort | uniq -c | sort -nr | head -5
+
+•	Display the three most frequently occurring usernames.
+grep -i "login for user" security_log.txt | grep -Eo 'user [[:alnum:]_]+' | awk '{print $2}' | sort | uniq
+-c | sort -nr | head -3
+•	Extract all destination ports and display them in numerical order.
+grep -Eo 'port [0-9]+' security_log.txt | awk '{print $2}' | sort -n
+
+•	Remove duplicate port numbers.
+grep -Eo 'port [0-9]+' security_log.txt | awk '{print $2}' | sort -n | uniq
+ 
+•	Count the number of unique destination ports.
+grep -Eo 'port [0-9]+' security_log.txt | awk '{print $2}' | sort -n | uniq | wc -l
+
+•	Extract all file extensions appearing in the log and determine their frequency.
+grep -Eo '\.[[:alnum:]]+' security_log.txt | sort | uniq -c | sort -nr
+
+•	Find the five most frequently occurring domains.
+grep -Eo '\b([[:alnum:]-]+\.)+[[:alpha:]]{2,}\b' security_log.txt | sort | uniq -c | sort -nr | head -5
+
+
+
+Part E - Combining grep Conditions
+•	Display lines containing both an IP address and the word Failed.
+grep -E 'Failed' security_log.txt | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}'
+
+•	Display lines containing both root and Failed.
+grep -i "Failed" security_log.txt | grep -w "root"
+
+•	Display lines containing either download or upload.
+grep -Ei 'download|upload' security_log.txt
+ 
+•	Display suspicious entries containing either .exe or .sh.
+grep "Suspicious" security_log.txt | grep -E '\.(exe|sh)\b'
+
+•	Display lines containing a CVE identifier and an IP address.
+grep -E 'CVE-[0-9]{4}-[0-9]{4,}' security_log.txt | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}'
+
+•	Display lines containing both a filename and a hash value.
+grep -E '\.(exe|sh|pdf)\b' security_log.txt | grep -Ei 'MD5=|SHA1|SHA256'
+
+•	Display entries containing an IP address followed by a port.
+grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]+|([0-9]{1,3}\.){3}[0-9]{1,3}.*port [0-9]+'
+security_log.txt
+
+•	Display HTTP requests containing both a URL and status code 404.
+grep -E 'https?://.*status 404' security_log.txt
+
+•	Display authentication failures but exclude entries generated from 127.0.0.1.
+grep -i "Failed login" security_log.txt | grep -v "127\.0\.0\.1"
+
+ 
+•	Display attack-related entries but exclude informational (INFO) messages.
+grep -Ei 'attack|exploit|malware|suspicious' security_log.txt | grep -v "INFO"
+
+
+
+Part F - Negative Matching
+•	Extract all IPv4 addresses except those beginning with 127..
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | grep -v '^127\.'
+
+•	Display all log entries except successful login events.
+grep -Eiv 'successful login' security_log.txt
+
+•	Display all entries that do not contain INFO, DEBUG, or SUCCESS.
+grep -Ev 'INFO|DEBUG|SUCCESS' security_log.txt
+
+•	Find HTTP requests whose status code is not 200.
+grep -E 'https?://' security_log.txt | grep -Ev 'status 200'
+
+ 
+•	Display suspicious traffic excluding connections to 192.168.x.x.
+grep "Suspicious" security_log.txt | grep -Ev '192\.168\.'
+
+•	Extract email addresses except those belonging to the organization's domain.
+grep -Eo '[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]+' security_log.txt | grep -v '@example\.com$'
+
+
+
+Part G - Redirection
+•	Extract all IPv4 addresses and save them into:
+ips.txt
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt > ips.txt
+
+
+•	Extract all email addresses and save them into:
+emails.txt
+grep -Eo '[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]+' security_log.txt > emails.txt
+
+
+•	Extract all URLs and save them into:
+urls.txt
+grep -Eo 'https?://[^[:space:]]+' security_log.txt > urls.txt
+
+
+•	Extract all hashes and save them into:
+hashes.txt
+grep -Eio '\b[[:xdigit:]]{32}|\b[[:xdigit:]]{40}|\b[[:xdigit:]]{64}' security_log.txt > hashes.txt
+
+
+•	Extract failed-login entries and save them into: failed_login.txt
+grep -i "Failed login" security_log.txt > failed_login.txt
+ 
+•	Extract suspicious entries and append them to:
+incident_report.txt
+grep "Suspicious" security_log.txt >> incident_report.txt
+
+
+•	Store unique IP addresses in:
+unique_ips.txt
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort -V | uniq > unique_ips.txt
+
+
+•	Store IP-frequency statistics in:
+ip_frequency.txt
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt | sort | uniq -c | sort -nr > ip_frequency.txt
+
+
+•	Redirect normal output to results.txt and errors to errors.txt.
+grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' security_log.txt > results.txt 2> errors.txt
+
+
+•	Extract all domains from the log entries containing Domain accessed, convert the domain names to lowercase, sort them alphabetically, remove duplicates, and save the result in domains.txt.
+grep "Domain accessed" security_log.txt | grep -Eo '([[:alnum:]-]+\.)+[[:alpha:]]{2,}' | tr '[:upper:]' '[:lower:]' | sort -u > domains.txt
+
+
+•	identify all IP addresses involved in failed-login attempts. Convert the output into a clean list containing one unique IP per line and save it as failed_login_ips.txt.
+grep -i "Failed login" security_log.txt | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -V -u > failed_login_ips.txt
+
+
+Combining filters
+•	Extract all failed-login usernames and save them into:
+failed_users.txt
+grep -i "Failed login" security_log.txt | grep -Eo 'user [[:alnum:]_]+' | awk '{print $2}' > failed_users.txt
+
+
+•	Extract all domains and save them in lowercase into:
+domains.txt
+grep -Eo '([[:alnum:]-]+\.)+[[:alpha:]]{2,}' security_log.txt | tr '[:upper:]' '[:lower:]' | sort -u > domains.txt
+ 
+•	Extract all MD5 hashes, convert them to uppercase, and save them into: md5_hashes.txt
+grep -Eo '[[:xdigit:]]{32}' security_log.txt | tr '[:lower:]' '[:upper:]' > md5_hashes.txt
+
+
+•	Extract source IP addresses from failed-login records, sort them, remove duplicates, and redirect the result to:
+failed_ips.txt
+grep -i "Failed login" security_log.txt | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -V -u > failed_ips.txt
+
+
+•	Create a file named clean_log.txt in which all square brackets are removed from the original log.
+sed 's/\[//g; s/\]//g' security_log.txt > clean_log.txt
+
+
+•	Create normalized_log.txt by converting the complete log file to lowercase.
+tr '[:upper:]' '[:lower:]' < security_log.txt > normalized_log.txt
+
+
+•	Extract all domain names, convert them to lowercase, sort them, remove duplicates, and save them to unique_domains.txt.
+grep -Eo '([[:alnum:]-]+\.)+[[:alpha:]]{2,}' security_log.txt | tr '[:upper:]' '[:lower:]' | sort -u > unique_domains.txt
+
+
+•	Find all failed-login entries and extract only the usernames.
+grep -i "Failed login" security_log.txt | grep -Eo 'user [[:alnum:]_]+' | awk '{print $2}'
+
+•	Find all failed-login entries, extract only the source IP addresses, and display them in sorted order.
+grep -i "Failed login" security_log.txt | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -V
+
+ 
+•	Extract IP addresses associated with failed logins and determine the unique IPs.
+grep -i "Failed login" security_log.txt | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -V -u
+
+•	Extract usernames involved in failed logins, convert them to uppercase, and remove duplicate values.
+grep -i "Failed login" security_log.txt | grep -Eo 'user [[:alnum:]_]+' | awk '{print $2}' | tr '[:lower:]' '[:upper:]' | sort -u
+
+•	Find all lines containing Domain accessed, extract only the domain names, and convert them to lowercase.
+grep "Domain accessed" security_log.txt | grep -Eo '([[:alnum:]-]+\.)+[[:alpha:]]{2,}' | tr '[:upper:]' '[:lower:]'
+
+•	Find all lines containing MD5=, extract only the MD5 hash values, and convert hexadecimal letters to uppercase.
+grep "MD5=" security_log.txt | grep -Eo 'MD5=[[:xdigit:]]{32}' | cut -d= -f2 | tr '[:lower:]' '[:upper:]'
+
+•	Find entries containing User-Agent:, extract the user-agent field, and convert it to lowercase.
+grep "User-Agent:" security_log.txt | sed 's/.*User-Agent: //' | tr '[:upper:]' '[:lower:]'
+
+•	Find all CVE-related lines, extract the CVE identifiers, and convert them to lowercase.
+grep -Eo 'CVE-[0-9]{4}-[0-9]{4,}' security_log.txt | tr '[:upper:]' '[:lower:]'
+
+ 
+•	Find all entries containing .exe, extract the relevant filename, and convert it to uppercase.
+grep -Eo '[[:alnum:]_.-]+\.exe\b' security_log.txt | tr '[:lower:]' '[:upper:]'
+
+
+
+•	Extract all domains from Domain accessed entries, convert them to uppercase, sort them, and remove duplicates.
+grep "Domain accessed" security_log.txt | grep -Eo '([[:alnum:]-]+\.)+[[:alpha:]]{2,}' | tr '[:lower:]' '[:upper:]' | sort -u
